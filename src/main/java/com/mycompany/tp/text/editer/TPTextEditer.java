@@ -4,11 +4,15 @@
 
 package com.mycompany.tp.text.editer;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 
 /**
  *
@@ -17,6 +21,7 @@ import javax.swing.JPanel;
 public class TPTextEditer{
     private JFrame frame;
     private JMenuBar menuBar;
+    private JTextArea textArea;
     
     public TPTextEditer(){
         frame = new JFrame();
@@ -40,6 +45,12 @@ public class TPTextEditer{
         fileMenu.add(openMenuItem);
         fileMenu.add(saveMenuItem);
         fileMenu.add(exitMenuItem);
+        MyMenuItemActionListener myMenuItemActionListener = new MyMenuItemActionListener();
+        newMenuItem.addActionListener(myMenuItemActionListener);
+        openMenuItem.addActionListener(myMenuItemActionListener);
+        saveMenuItem.addActionListener(myMenuItemActionListener);
+        exitMenuItem.addActionListener(myMenuItemActionListener);
+        
         
         JMenu editMenu = new JMenu("Edit");
         JMenuItem copyMenuItem = new JMenuItem("Copy");
@@ -52,6 +63,12 @@ public class TPTextEditer{
         editMenu.add(pasteMenuItem);
         editMenu.add(findMenuItem); 
         editMenu.add(replaceMenuItem);  
+        copyMenuItem.addActionListener(myMenuItemActionListener);
+        cutMenuItem.addActionListener(myMenuItemActionListener);
+        pasteMenuItem.addActionListener(myMenuItemActionListener);
+        findMenuItem.addActionListener(myMenuItemActionListener);
+        replaceMenuItem.addActionListener(myMenuItemActionListener);
+        
         
         JMenu styleMenu = new JMenu("Style");
         JMenuItem boldMenuItem = new JMenuItem("Bold");
@@ -60,10 +77,18 @@ public class TPTextEditer{
         styleMenu.add(boldMenuItem);
         styleMenu.add(italicMenuItem);
         styleMenu.add(underlineMenuItem);
+        boldMenuItem.addActionListener(myMenuItemActionListener);
+        italicMenuItem.addActionListener(myMenuItemActionListener);
+        underlineMenuItem.addActionListener(myMenuItemActionListener);
+        
         
         menuBar.add(fileMenu);
         menuBar.add(editMenu);
         menuBar.add(styleMenu);
+        
+        
+        
+        
         
         frame.setVisible(true);
     }
@@ -71,4 +96,15 @@ public class TPTextEditer{
     public static void main(String[] args) {
         new TPTextEditer();
     }
+    
+    
+
+    private class MyMenuItemActionListener implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            
+        }
+    }
+    
 }
