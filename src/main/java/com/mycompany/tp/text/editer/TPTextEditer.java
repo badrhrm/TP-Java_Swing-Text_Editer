@@ -4,8 +4,13 @@
 
 package com.mycompany.tp.text.editer;
 
+import java.awt.Color;
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -15,21 +20,26 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.UIManager;
+import javax.swing.plaf.ColorUIResource;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyleContext;
+import javax.swing.text.StyledDocument;
 
 /**
  *
@@ -93,14 +103,14 @@ public class TPTextEditer{
         
         JMenu styleMenu = new JMenu("Style");
         JMenuItem normalMenuItem = new JMenuItem("Normal");
-        JMenuItem boldMenuItem = new JMenuItem("Bold");
-        JMenuItem italicMenuItem = new JMenuItem("Italic");
-        JMenuItem underlineMenuItem = new JMenuItem("Underline");
+        JMenuItem boldMenuItem = new JCheckBoxMenuItem("Bold");
+        JMenuItem italicMenuItem = new JCheckBoxMenuItem("Italic");
+        JMenuItem underlineMenuItem = new JCheckBoxMenuItem("Underline");
         styleMenu.add(normalMenuItem);
         styleMenu.add(boldMenuItem);
         styleMenu.add(italicMenuItem);
         styleMenu.add(underlineMenuItem);
-        StyleMenuActionListener styleMenuActionListener = new StyleMenuActionListener();
+        StyleMenuActionListener styleMenuActionListener = new StyleMenuActionListener(styleMenu);
         boldMenuItem.addActionListener(styleMenuActionListener);
         italicMenuItem.addActionListener(styleMenuActionListener);
         underlineMenuItem.addActionListener(styleMenuActionListener);
@@ -227,6 +237,14 @@ public class TPTextEditer{
     }
     
     private class StyleMenuActionListener implements ActionListener {
+        //ColorUIResource originalBackgroundColor = new ColorUIResource(238, 238, 238);
+        //ColorUIResource clickedBackgroundColor = new ColorUIResource(55, 170, 212);
+        
+        private JMenu styleMenu;
+        
+        public StyleMenuActionListener(JMenu styleMenu) {
+            this.styleMenu = styleMenu;
+        }
 
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -235,39 +253,65 @@ public class TPTextEditer{
             
             StyleContext sc = new StyleContext();
             
+            int selectedTextStartPosition = textPane.getSelectionStart();
+            int selectedTextEndPosition = textPane.getSelectionEnd();
+            int selectedTextLength = selectedTextEndPosition - selectedTextStartPosition;
+            StyledDocument doc = textPane.getStyledDocument();
+            
+            
             if (menuItemName.equals("Normal")){
-                Style normalStyle = sc.getStyle(StyleContext.DEFAULT_STYLE);  
-                textPane.setCharacterAttributes(normalStyle, true);
+                Component[] styleMenuItems = styleMenu.getMenuComponents();
+                for (Component item : styleMenuItems) {
+                    if (item instanceof JCheckBoxMenuItem) {
+                        ((JCheckBoxMenuItem) item).setSelected(false);
+                    }
+                }
+                
+                    Style normalStyle = sc.getStyle(StyleContext.DEFAULT_STYLE);
+                    textPane.setCharacterAttributes(normalStyle, true);
             }
             
             else if (menuItemName.equals("Bold")){
-                Style boldStyle = sc.addStyle("boldStyle", null);
-                StyleConstants.setBold(boldStyle, true);   
-                textPane.setCharacterAttributes(boldStyle, true);
+                if (menuItem.isSelected()) {
+                    Style boldStyle = sc.addStyle("boldStyle", null);
+                    // the attributeSet
+                    StyleConstants.setBold(boldStyle, true);   
+                    
+                    // Apply the attribute set to the selected text range
+                    doc.setCharacterAttributes(selectedTextStartPosition,selectedTextLength,boldStyle, false);
+                }
             }
             
             else if (menuItemName.equals("Italic")){
-                Style italicStyle = sc.addStyle("ItalicStyle", null);
-                StyleConstants.setItalic(italicStyle, true);   
-                textPane.setCharacterAttributes(italicStyle, true);
+                if (menuItem.isSelected()) {
+                    Style italicStyle = sc.addStyle("ItalicStyle", null);
+                    StyleConstants.setItalic(italicStyle, true);   
+                    //textPane.setCharacterAttributes(italicStyle, true);
+                    // Apply the attribute set to the selected text range
+                    doc.setCharacterAttributes(selectedTextStartPosition,selectedTextLength,italicStyle, false);
+                }
             }
             
             else if (menuItemName.equals("Underline")){
-                Style underlineStyle = sc.addStyle("underlineStyle", null);
-                StyleConstants.setUnderline(underlineStyle, true);   
-                textPane.setCharacterAttributes(underlineStyle, true);
+                if (menuItem.isSelected()) {
+                    Style underlineStyle = sc.addStyle("underlineStyle", null);
+                    StyleConstants.setUnderline(underlineStyle, true);   
+                    //textPane.setCharacterAttributes(underlineStyle, true);
+                    // Apply the attribute set to the selected text range
+                    doc.setCharacterAttributes(selectedTextStartPosition,selectedTextLength,underlineStyle, false);
+                }
             }
-
         }
     }
-    
+
+
     private class EditMenuActionListener implements ActionListener {
 
         @Override
         public void actionPerformed(ActionEvent e) {
             JMenuItem menuItem = (JMenuItem) e.getSource();
             String menuItemName = menuItem.getText();
-            
+             
             
         }
     }
