@@ -8,7 +8,10 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
+import java.awt.datatransfer.UnsupportedFlavorException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -363,7 +366,27 @@ public class TPTextEditer{
             }
             
             else if (menuItemName.equals("Paste")){
+                String textToPaste = null;
+                Transferable content = clipboard.getContents(null);
+                String orginalText = textPane.getText();
+                int orginalTextEndPosition = orginalText.length();
+                String resultText = null;
                 
+                try {
+                    textToPaste = (String) content.getTransferData(DataFlavor.stringFlavor);
+                } catch (UnsupportedFlavorException | IOException ex) {
+                    Logger.getLogger(TPTextEditer.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                
+                try { 
+                    String textPreSelection = textPane.getText(0, selectedTextStartPosition - 0);
+                    String textPostSelection = textPane.getText(selectedTextEndPosition, orginalTextEndPosition - selectedTextEndPosition);
+                    resultText = textPreSelection + textToPaste + textPostSelection;
+                } catch (BadLocationException ex) {
+                    Logger.getLogger(TPTextEditer.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                
+                textPane.setText(resultText);
             }
             else if (menuItemName.equals("Find")){
                 
