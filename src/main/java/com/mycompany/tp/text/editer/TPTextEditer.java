@@ -6,6 +6,9 @@ package com.mycompany.tp.text.editer;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -306,12 +309,68 @@ public class TPTextEditer{
 
 
     private class EditMenuActionListener implements ActionListener {
-
+        // Get the system clipboard
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        // Create a StringSelection object containing the text
+        StringSelection selection ;
+                
         @Override
         public void actionPerformed(ActionEvent e) {
             JMenuItem menuItem = (JMenuItem) e.getSource();
             String menuItemName = menuItem.getText();
              
+            int selectedTextStartPosition = textPane.getSelectionStart();
+            int selectedTextEndPosition = textPane.getSelectionEnd();
+            int selectedTextLength = selectedTextEndPosition - selectedTextStartPosition;
+            
+            if (menuItemName.equals("Copy")){
+                String textToCopy = null;
+                try {
+                    textToCopy = textPane.getText(selectedTextStartPosition, selectedTextLength);
+                } catch (BadLocationException ex) {
+                    Logger.getLogger(TPTextEditer.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                
+                selection = new StringSelection(textToCopy);
+                // Set the contents of the clipboard to the StringSelection
+                clipboard.setContents (selection,null);
+                
+                System.out.println(clipboard);
+                System.out.println(selection);
+                System.out.println(textToCopy);
+            }
+            else if (menuItemName.equals("Cut")){
+                String orginalText = textPane.getText();
+                int orginalTextEndPosition = orginalText.length();
+                String resultText = null;
+                String textToCut = null;
+                
+                try {
+                    textToCut = textPane.getText(selectedTextStartPosition, selectedTextLength);
+                    
+                    String textPreSelection = textPane.getText(0, selectedTextStartPosition - 0);
+                    String textPostSelection = textPane.getText(selectedTextEndPosition, orginalTextEndPosition - selectedTextEndPosition);
+                    resultText = textPreSelection + textPostSelection;
+                } catch (BadLocationException ex) {
+                    Logger.getLogger(TPTextEditer.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                
+                textPane.setText(resultText);
+                
+                selection = new StringSelection(textToCut);
+                // Set the contents of the clipboard to the StringSelection
+                clipboard.setContents (selection,null);
+            }
+            
+            else if (menuItemName.equals("Paste")){
+                
+            }
+            else if (menuItemName.equals("Find")){
+                
+            }
+            else if (menuItemName.equals("Replace")){
+                
+            }
             
         }
     }
