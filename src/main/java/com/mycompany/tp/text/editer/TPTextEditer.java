@@ -12,6 +12,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -22,6 +24,12 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.JTextPane;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.Style;
+import javax.swing.text.StyleConstants;
+import javax.swing.text.StyleContext;
 
 /**
  *
@@ -30,7 +38,7 @@ import javax.swing.JTextField;
 public class TPTextEditer{
     private JFrame frame;
     private JMenuBar menuBar;
-    private JTextArea textArea;
+    private JTextPane textPane;
     
     public TPTextEditer(){
         frame = new JFrame();
@@ -56,12 +64,12 @@ public class TPTextEditer{
         fileMenu.add(saveMenuItem);
         fileMenu.add(saveAsMenuItem);
         fileMenu.add(exitMenuItem);
-        MyMenuItemActionListener myMenuItemActionListener = new MyMenuItemActionListener();
-        newMenuItem.addActionListener(myMenuItemActionListener);
-        openMenuItem.addActionListener(myMenuItemActionListener);
-        saveMenuItem.addActionListener(myMenuItemActionListener);
-        saveAsMenuItem.addActionListener(myMenuItemActionListener);
-        exitMenuItem.addActionListener(myMenuItemActionListener);
+        FileMenuActionListener FileMenuActionListener = new FileMenuActionListener();
+        newMenuItem.addActionListener(FileMenuActionListener);
+        openMenuItem.addActionListener(FileMenuActionListener);
+        saveMenuItem.addActionListener(FileMenuActionListener);
+        saveAsMenuItem.addActionListener(FileMenuActionListener);
+        exitMenuItem.addActionListener(FileMenuActionListener);
         
         
         JMenu editMenu = new JMenu("Edit");
@@ -74,24 +82,29 @@ public class TPTextEditer{
         editMenu.add(cutMenuItem);
         editMenu.add(pasteMenuItem);
         editMenu.add(findMenuItem); 
-        editMenu.add(replaceMenuItem);  
-        copyMenuItem.addActionListener(myMenuItemActionListener);
-        cutMenuItem.addActionListener(myMenuItemActionListener);
-        pasteMenuItem.addActionListener(myMenuItemActionListener);
-        findMenuItem.addActionListener(myMenuItemActionListener);
-        replaceMenuItem.addActionListener(myMenuItemActionListener);
+        editMenu.add(replaceMenuItem);
+        EditMenuActionListener editMenuActionListener = new EditMenuActionListener();
+        copyMenuItem.addActionListener(editMenuActionListener);
+        cutMenuItem.addActionListener(editMenuActionListener);
+        pasteMenuItem.addActionListener(editMenuActionListener);
+        findMenuItem.addActionListener(editMenuActionListener);
+        replaceMenuItem.addActionListener(editMenuActionListener);
         
         
         JMenu styleMenu = new JMenu("Style");
+        JMenuItem normalMenuItem = new JMenuItem("Normal");
         JMenuItem boldMenuItem = new JMenuItem("Bold");
         JMenuItem italicMenuItem = new JMenuItem("Italic");
         JMenuItem underlineMenuItem = new JMenuItem("Underline");
+        styleMenu.add(normalMenuItem);
         styleMenu.add(boldMenuItem);
         styleMenu.add(italicMenuItem);
         styleMenu.add(underlineMenuItem);
-        boldMenuItem.addActionListener(myMenuItemActionListener);
-        italicMenuItem.addActionListener(myMenuItemActionListener);
-        underlineMenuItem.addActionListener(myMenuItemActionListener);
+        StyleMenuActionListener styleMenuActionListener = new StyleMenuActionListener();
+        boldMenuItem.addActionListener(styleMenuActionListener);
+        italicMenuItem.addActionListener(styleMenuActionListener);
+        underlineMenuItem.addActionListener(styleMenuActionListener);
+        normalMenuItem.addActionListener(styleMenuActionListener);
         
         
         menuBar.add(fileMenu);
@@ -99,11 +112,11 @@ public class TPTextEditer{
         menuBar.add(styleMenu);
         
         
-        textArea = new JTextArea();
-        textArea.setLineWrap(true);
-        textArea.setWrapStyleWord(true);
-        textArea.setVisible(false);
-        JScrollPane textAreaScrollPane = new JScrollPane(textArea);
+        textPane = new JTextPane();
+        //textArea.setLineWrap(true);
+        //textArea.setWrapStyleWord(true);
+        textPane.setVisible(false);
+        JScrollPane textAreaScrollPane = new JScrollPane(textPane);
         frame.add(textAreaScrollPane);
         
         
@@ -113,10 +126,8 @@ public class TPTextEditer{
     public static void main(String[] args) {
         new TPTextEditer();
     }
-    
-    
 
-    private class MyMenuItemActionListener implements ActionListener {
+    private class FileMenuActionListener implements ActionListener {
         // this should stay here u dumbass not inside the method, that is why when open a file then save afterwards u find out that the file is null 
         // because once u click on another menuItem the the action performed methoed is relaunched and so it resets the file into null 
         // stupid dumb scope mistake 
@@ -128,13 +139,13 @@ public class TPTextEditer{
             JFileChooser fileChooser = new JFileChooser();
             
             if( menuItem.getText().equals("New") ){
-                textArea.setVisible(true);
-                textArea.setText("");
+                textPane.setVisible(true);
+                textPane.setText("");
                 file = null;
             }
             
             else if (menuItem.getText().equals("Open")){
-                textArea.setVisible(true);
+                textPane.setVisible(true);
                 
                 try {
                     // Show file choosing interface
@@ -152,7 +163,7 @@ public class TPTextEditer{
                         // this goes through each line and appends it 
                         stringBuilder.append(line).append("\n"); // poteniel issue : .append("\n") means we always have an extra newline at the end of any opened file
                     }
-                    textArea.setText(stringBuilder.toString());
+                    textPane.setText(stringBuilder.toString());
                     bufferedReader.close();
                 } catch (IOException ioe) {
                     ioe.printStackTrace();
@@ -165,7 +176,7 @@ public class TPTextEditer{
                     if(file != null){
                         // saving the new modification on the opened file 
                         BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(file));
-                        bufferedWriter.write(textArea.getText());
+                        bufferedWriter.write(textPane.getText());
                     
                         bufferedWriter.close();
                     }
@@ -179,7 +190,7 @@ public class TPTextEditer{
                             String name = fileNameInputDialog.showDialog(frame);
                             file = new File(directory, name);
                             BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(file));
-                            bufferedWriter.write(textArea.getText());
+                            bufferedWriter.write(textPane.getText());
                             bufferedWriter.close();
                     
                         }
@@ -200,7 +211,7 @@ public class TPTextEditer{
                             String name = fileNameInputDialog.showDialog(frame);
                             file = new File(directory, name);
                             BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(file));
-                            bufferedWriter.write(textArea.getText());
+                            bufferedWriter.write(textPane.getText());
                             bufferedWriter.close();
                         }
                 } catch (IOException ioe) {
@@ -215,6 +226,52 @@ public class TPTextEditer{
         }
     }
     
+    private class StyleMenuActionListener implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            JMenuItem menuItem = (JMenuItem) e.getSource();
+            String menuItemName = menuItem.getText();
+            
+            StyleContext sc = new StyleContext();
+            
+            if (menuItemName.equals("Normal")){
+                Style normalStyle = sc.getStyle(StyleContext.DEFAULT_STYLE);  
+                textPane.setCharacterAttributes(normalStyle, true);
+            }
+            
+            else if (menuItemName.equals("Bold")){
+                Style boldStyle = sc.addStyle("boldStyle", null);
+                StyleConstants.setBold(boldStyle, true);   
+                textPane.setCharacterAttributes(boldStyle, true);
+            }
+            
+            else if (menuItemName.equals("Italic")){
+                Style italicStyle = sc.addStyle("ItalicStyle", null);
+                StyleConstants.setItalic(italicStyle, true);   
+                textPane.setCharacterAttributes(italicStyle, true);
+            }
+            
+            else if (menuItemName.equals("Underline")){
+                Style underlineStyle = sc.addStyle("underlineStyle", null);
+                StyleConstants.setUnderline(underlineStyle, true);   
+                textPane.setCharacterAttributes(underlineStyle, true);
+            }
+
+        }
+    }
+    
+    private class EditMenuActionListener implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            JMenuItem menuItem = (JMenuItem) e.getSource();
+            String menuItemName = menuItem.getText();
+            
+            
+        }
+    }
     
     
 }
+
