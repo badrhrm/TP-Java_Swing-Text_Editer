@@ -388,9 +388,12 @@ public class TPTextEditer{
                 
                 textPane.setText(resultText);
             }
+            
             else if (menuItemName.equals("Find")){
-                
+                FindMenuItemDialog findMenuItemDialog = new FindMenuItemDialog(textPane);
+                findMenuItemDialog.showDialog(frame);
             }
+            
             else if (menuItemName.equals("Replace")){
                 
             }
